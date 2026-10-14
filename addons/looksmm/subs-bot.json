@@ -8,7 +8,7 @@
     "en": "A subscribers' Telegram bot built on mikan's official bot: a menu of your own as a tree of screens, broadcasts to everyone who started the bot, automatic messages with buttons, icons and coloured buttons, your own screen texts. No database of its own: everything is kept in the panel.",
     "ru": "Telegram-бот подписчиков на основе официального бота mikan: своё меню деревом разделов, рассылка всем, кто запускал бота, автосообщения с кнопками, иконки и цветные кнопки, свои тексты экранов. Без своей базы: всё хранится в панели."
   },
-  "version": "1.0.2",
+  "version": "1.0.4",
   "protocol": 2,
   "kind": "bot",
   "mode": "http",
@@ -26,12 +26,16 @@
     "mem_mb": 128
   },
   "image": "ghcr.io/looksmm/mikan-subs-bot",
-  "digest": "sha256:84cf3eb2dd7e1f26fbc999fb55258625ec5af9729a27fc846879847ee36091fa",
+  "digest": "sha256:e3104798deee1890c57a7835f3891cae333c8e6a5356c251a44953ce1c6e033f",
   "min_panel": "0.5.1.0",
   "homepage": "https://github.com/looksmm/mikan-subs-bot",
   "repo": "github.com/looksmm/mikan-subs-bot",
   "repo_id": 1419675928,
   "stars": 0,
+  "previous": {
+    "version": "1.0.2",
+    "digest": "sha256:84cf3eb2dd7e1f26fbc999fb55258625ec5af9729a27fc846879847ee36091fa"
+  },
   "added_at": 1792012907,
-  "updated_at": 1792012907
+  "updated_at": 1792022275
 }
