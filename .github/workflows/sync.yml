@@ -1,0 +1,84 @@
+name: sync
+
+# Every hour: the indexer reads the authors' releases again, finds new repositories by the
+# mikan-addon topic, commits what may go in by itself and opens pull requests for the rest.
+# Then, and on every merge to main, a changed registry is published as a signed index.json.
+# Commits and pull requests made with GITHUB_TOKEN start no workflow, so the release runs
+# here, in the same job, after the sync.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print what the sync would do, change nothing"
+        type: boolean
+        default: false
+
+concurrency:
+  group: community-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: registry
+      - uses: actions/checkout@v5
+        with:
+          repository: getmikan/marketplace
+          path: marketplace
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: marketplace/go.mod
+          cache-dependency-path: marketplace/go.sum
+      - name: Build the indexer
+        working-directory: marketplace
+        run: go build -o "$RUNNER_TEMP/community" ./cmd/community
+
+      - name: Sync
+        if: github.event_name != 'push'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          base="$(git -C registry rev-parse HEAD)"
+          flags=()
+          if [ "$DRY_RUN" = "true" ]; then flags+=(-dry-run); fi
+          "$RUNNER_TEMP/community" sync -root registry -registry "$GITHUB_REPOSITORY" -base "$base" "${flags[@]}"
+          git -C registry pull --ff-only --quiet
+
+      - name: Build the signed index
+        if: inputs.dry_run != true
+        env:
+          MARKETPLACE_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
+        run: |
+          "$RUNNER_TEMP/community" build -root registry -out dist
+          "$RUNNER_TEMP/community" verify dist/index.json
+
+      - name: Publish when it changed
+        if: inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir previous
+          if gh release download --repo "$GITHUB_REPOSITORY" --pattern index.json --dir previous 2>/dev/null; then
+            if [ "$("$RUNNER_TEMP/community" same dist/index.json previous/index.json)" = "same" ]; then
+              echo "index unchanged"
+              exit 0
+            fi
+          fi
+          sha="$(git -C registry rev-parse HEAD)"
+          tag="index-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$sha" \
+            --title "Community index $tag" --latest \
+            --notes "Community addons are not reviewed by mikan. See the README." \
+            dist/index.json dist/index.json.sig
