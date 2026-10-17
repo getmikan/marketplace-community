@@ -71,3 +71,21 @@ curl -fsSLO https://github.com/getmikan/marketplace-community/releases/latest/do
 curl -fsSLO https://github.com/getmikan/marketplace-community/releases/latest/download/index.json.sig
 go run github.com/getmikan/marketplace/cmd/community@latest verify index.json
 ```
+
+## License and attribution
+
+The original documentation, automation, and other original content in this repository are
+licensed under the [GNU Affero General Public License v3.0 only](LICENSE)
+(`AGPL-3.0-only`), to the extent the respective contributors hold the necessary rights.
+
+Copyright (c) 2026 Miroshka and contributors.
+
+Original repository: https://github.com/getmikan/marketplace-community
+
+Redistributors of covered material must comply with the AGPLv3, including preserving
+applicable copyright and license notices, identifying modifications, and making
+corresponding source available when required. The license does **not** prohibit forks.
+
+The registry references third-party addons, images, repositories and descriptions.
+Their respective authors retain their rights. This repository's license does not
+relicense any linked third-party software or content that its contributors do not own.
