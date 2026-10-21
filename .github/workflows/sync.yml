@@ -74,7 +74,10 @@ jobs:
         run: |
           mkdir previous
           if gh release download --repo "$GITHUB_REPOSITORY" --pattern index.json --dir previous 2>/dev/null; then
-            if [ "$("$RUNNER_TEMP/community" same dist/index.json previous/index.json)" = "same" ]; then
+            # An index from before the registry's key has no index.json.sig2: it is published once
+            # again, signed so, though nothing changed (mikan 0.5.1.1 reads only that one).
+            signed="$(gh release view --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | grep -cx 'index.json.sig2' || true)"
+            if [ "$signed" = 1 ] && [ "$("$RUNNER_TEMP/community" same dist/index.json previous/index.json)" = "same" ]; then
               echo "index unchanged"
               exit 0
             fi
