@@ -59,6 +59,9 @@ jobs:
       - name: Build the signed index
         if: inputs.dry_run != true
         env:
+          # The registry's own key signs index.json.sig2. The release key signs index.json.sig
+          # for the panels before mikan 0.5.1.1 until this secret is removed.
+          MARKETPLACE_COMMUNITY_KEY: ${{ secrets.MARKETPLACE_COMMUNITY_KEY }}
           MARKETPLACE_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
         run: |
           "$RUNNER_TEMP/community" build -root registry -out dist
@@ -71,14 +74,19 @@ jobs:
         run: |
           mkdir previous
           if gh release download --repo "$GITHUB_REPOSITORY" --pattern index.json --dir previous 2>/dev/null; then
-            if [ "$("$RUNNER_TEMP/community" same dist/index.json previous/index.json)" = "same" ]; then
+            # An index from before the registry's key has no index.json.sig2: it is published once
+            # again, signed so, though nothing changed (mikan 0.5.1.1 reads only that one).
+            signed="$(gh release view --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | grep -cx 'index.json.sig2' || true)"
+            if [ "$signed" = 1 ] && [ "$("$RUNNER_TEMP/community" same dist/index.json previous/index.json)" = "same" ]; then
               echo "index unchanged"
               exit 0
             fi
           fi
           sha="$(git -C registry rev-parse HEAD)"
           tag="index-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
+          files=(dist/index.json dist/index.json.sig2)
+          if [ -f dist/index.json.sig ]; then files+=(dist/index.json.sig); fi
           gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$sha" \
             --title "Community index $tag" --latest \
             --notes "Community addons are not reviewed by mikan. See the README." \
-            dist/index.json dist/index.json.sig
+            "${files[@]}"
