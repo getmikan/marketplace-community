@@ -59,6 +59,9 @@ jobs:
       - name: Build the signed index
         if: inputs.dry_run != true
         env:
+          # The registry's own key signs index.json.sig2. The release key signs index.json.sig
+          # for the panels before mikan 0.5.1.1 until this secret is removed.
+          MARKETPLACE_COMMUNITY_KEY: ${{ secrets.MARKETPLACE_COMMUNITY_KEY }}
           MARKETPLACE_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
         run: |
           "$RUNNER_TEMP/community" build -root registry -out dist
@@ -78,7 +81,9 @@ jobs:
           fi
           sha="$(git -C registry rev-parse HEAD)"
           tag="index-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
+          files=(dist/index.json dist/index.json.sig2)
+          if [ -f dist/index.json.sig ]; then files+=(dist/index.json.sig); fi
           gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$sha" \
             --title "Community index $tag" --latest \
             --notes "Community addons are not reviewed by mikan. See the README." \
-            dist/index.json dist/index.json.sig
+            "${files[@]}"
