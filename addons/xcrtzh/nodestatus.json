@@ -1,0 +1,33 @@
+{
+  "id": "nodestatus",
+  "name": {
+    "en": "Node status",
+    "ru": "Статус нод"
+  },
+  "description": {
+    "en": "Node monitoring: per-minute availability checks, 24h/7d/30d uptime, public status page, email alerts",
+    "ru": "Мониторинг нод: проверки доступности каждую минуту, аптайм за 24ч/7д/30д, публичная страница статуса, email-алерты"
+  },
+  "version": "1.3.1",
+  "protocol": 2,
+  "kind": "ui",
+  "mode": "http",
+  "permissions": [
+    "kv",
+    "ui"
+  ],
+  "resources": {
+    "mem_mb": 64
+  },
+  "image": "ghcr.io/xcrtzh/tool-nodestatus",
+  "digest": "sha256:c215575a8fb426c336bcf723824e3188d363d71c63c790f042ee9b8d7946c137",
+  "min_panel": "0.5.1.0",
+  "homepage": "https://github.com/xcrtzh/mikan-addon-nodestatus",
+  "repo": "github.com/xcrtzh/mikan-addon-nodestatus",
+  "repo_id": 1423762878,
+  "key": "GHkaQLOpPtVa+Tmc9mzKZCgi1k1/e4BqoVDwVr1SHzM=",
+  "stars": 0,
+  "downloads": 18,
+  "added_at": 1794710633,
+  "updated_at": 1794710633
+}
